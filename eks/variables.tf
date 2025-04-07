@@ -1,6 +1,5 @@
 variable "cluster_name" {
-  type    = string
-  default = "main"
+  type = string
 }
 
 variable "vpc_id" {
@@ -8,22 +7,21 @@ variable "vpc_id" {
 }
 
 variable "cluster_version" {
-  type    = string
-  default = "1.32"
+  type = string
+}
+
+variable "instance_type" {
+  type = string
+}
+
+variable "node_group_scaling" {
+  type = map(number)
 }
 
 variable "karpenter_version" {
-  type    = string
-  default = "1.1.2"
-}
-
-variable "custom_ami_id" {
   type = string
 }
 
 variable "tags" {
   type = map(string)
-  default = {
-    "name" = "main"
-  }
 }

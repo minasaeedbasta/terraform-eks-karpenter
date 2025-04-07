@@ -164,14 +164,6 @@ resource "aws_key_pair" "eks_key" {
 # ##################################################
 # EKS CLUSTER CORE
 # ##################################################
-
-data "aws_ami" "eks" {
-  count       = var.custom_ami_id == null ? 1 : 0
-  name_regex  = "amazon-eks-node-al2023-x86_64-standard-${var.cluster_version}-*"
-  most_recent = true
-  owners      = ["602401143452"]
-}
-
 resource "aws_eks_cluster" "main" {
   name                      = var.cluster_name
   role_arn                  = aws_iam_role.this.arn
@@ -499,18 +491,18 @@ resource "aws_launch_template" "karpenter" {
   name_prefix            = "karpenter-launch-template-"
   description            = "Custom launch template for karpenter EKS managed node group"
   update_default_version = true
-  # image_id               = local.ami_id
-  # instance_type          = "t3.medium"
-  key_name = aws_key_pair.eks_key.key_name
+  image_id               = data.aws_ami.bottlerocket_eks.image_id
+  instance_type          = var.instance_type
+  key_name               = aws_key_pair.eks_key.key_name
 
-  # user_data = base64encode(<<-EOF
-  #   #!/bin/bash
-  #   set -ex
-  #   /etc/eks/bootstrap.sh ${var.cluster_name} \
-  #     --apiserver-endpoint ${aws_eks_cluster.main.endpoint} \
-  #     --b64-cluster-ca ${aws_eks_cluster.main.certificate_authority[0].data}
-  #   EOF
-  # )
+  user_data = base64encode(<<-EOF
+    #!/bin/bash
+    set -ex
+    /etc/eks/bootstrap.sh ${var.cluster_name} \
+      --apiserver-endpoint ${aws_eks_cluster.main.endpoint} \
+      --b64-cluster-ca ${aws_eks_cluster.main.certificate_authority[0].data}
+    EOF
+  )
 
   network_interfaces {
     associate_public_ip_address = true
@@ -552,8 +544,6 @@ resource "aws_eks_node_group" "karpenter" {
   node_group_name_prefix = "karpenter-"
   node_role_arn          = aws_iam_role.node_group.arn
   subnet_ids             = data.aws_subnets.public_subnets.ids
-  ami_type               = "AL2_x86_64"
-  instance_types         = ["t3.medium"]
 
   scaling_config {
     desired_size = 2

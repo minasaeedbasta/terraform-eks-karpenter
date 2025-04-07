@@ -15,3 +15,7 @@ output "private_key_pem" {
   value       = tls_private_key.eks_key.private_key_pem
   sensitive   = true
 }
+
+output "custom_ami_id" {
+  value = data.aws_ami.bottlerocket_eks.image_id
+}

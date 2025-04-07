@@ -5,10 +5,6 @@ locals {
 }
 
 locals {
-  ami_id = var.custom_ami_id != null ? var.custom_ami_id : data.aws_ami.eks[0].image_id
-}
-
-locals {
   azs = slice(data.aws_availability_zones.available.names, 0, 3)
 }
 

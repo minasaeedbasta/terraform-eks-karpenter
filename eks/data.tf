@@ -34,3 +34,28 @@ data "aws_subnets" "private_subnets" {
     values = ["Private"]
   }
 }
+
+data "aws_ami" "bottlerocket_eks" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["bottlerocket-aws-k8s-${var.cluster_version}-x86_64-*"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+}
