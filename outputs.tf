@@ -1,17 +1,17 @@
 output "cluster_endpoint" {
-  value = aws_eks_cluster.main.endpoint
+  value = module.eks.cluster_endpoint
 }
 
 output "cluster_ca_certificate" {
-  value = aws_eks_cluster.main.certificate_authority[0].data
+  value = module.eks.cluster_ca_certificate
 }
 
 output "karpenter_release_name" {
-  value = helm_release.karpenter.name
+  value = module.eks.karpenter_release_name
 }
 
 output "private_key_pem" {
   description = "Private key in PEM format for SSH access to nodes"
-  value       = tls_private_key.eks_key.private_key_pem
+  value       = module.eks.private_key_pem
   sensitive   = true
 }

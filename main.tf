@@ -7,9 +7,9 @@ module "eks" {
 
 module "karpenter" {
   source           = "./karpenter"
-  cluster_name     = aws_eks_cluster.main.name
-  cluster_endpoint = aws_eks_cluster.main.endpoint
-  cluster_ca_data  = aws_eks_cluster.main.certificate_authority[0].data
+  cluster_name     = var.cluster_name
+  cluster_endpoint = module.eks.cluster_endpoint
+  cluster_ca_data  = module.eks.cluster_ca_certificate
   tags             = var.tags
   # karpenter_spot_policy_arn = ""
   runner_set_parameters = var.runner_set_parameters
