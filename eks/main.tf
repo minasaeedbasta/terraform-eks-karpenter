@@ -487,6 +487,18 @@ resource "helm_release" "karpenter" {
   depends_on = [aws_eks_node_group.karpenter]
 }
 
+
+data "template_file" "karpenter_userdata" {
+  template = file("${path.module}/userdata.tpl")
+
+  vars = {
+    cluster_name = var.cluster_name
+    api_server   = aws_eks_cluster.main.endpoint
+    cluster_ca   = aws_eks_cluster.main.certificate_authority[0].data
+  }
+}
+
+
 resource "aws_launch_template" "karpenter" {
   name_prefix            = "karpenter-launch-template-"
   description            = "Custom launch template for karpenter EKS managed node group"
@@ -495,14 +507,7 @@ resource "aws_launch_template" "karpenter" {
   instance_type          = var.instance_type
   key_name               = aws_key_pair.eks_key.key_name
 
-  user_data = base64encode(<<-EOF
-    #!/bin/bash
-    set -ex
-    /etc/eks/bootstrap.sh ${var.cluster_name} \
-      --apiserver-endpoint ${aws_eks_cluster.main.endpoint} \
-      --b64-cluster-ca ${aws_eks_cluster.main.certificate_authority[0].data}
-    EOF
-  )
+  user_data = base64encode(data.template_file.karpenter_userdata.rendered)
 
   network_interfaces {
     associate_public_ip_address = true
