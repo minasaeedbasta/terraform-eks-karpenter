@@ -275,7 +275,7 @@ resource "aws_eks_access_policy_association" "cluster_creator_admin" {
 }
 
 resource "time_sleep" "this" {
-  create_duration = "1m"
+  create_duration = "30s"
   depends_on      = [aws_eks_cluster.main]
 
   triggers = {
@@ -531,7 +531,6 @@ resource "aws_launch_template" "karpenter" {
   user_data = base64encode(data.template_file.karpenter_userdata.rendered)
 
   network_interfaces {
-    associate_public_ip_address = true
     security_groups             = [aws_security_group.node.id]
     delete_on_termination       = true
   }
