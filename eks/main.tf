@@ -2,6 +2,27 @@
 # NETWORKING AND VPC CONFIGURATION
 # ##################################################
 
+resource "aws_ec2_tag" "tag_private_subnets_discovery" {
+  for_each    = toset(data.aws_subnets.private_subnets.ids)
+  resource_id = each.key  
+  key         = "karpenter.sh/discovery"
+  value       = var.cluster_name
+}
+
+resource "aws_ec2_tag" "tag_private_subnets_alb" {
+  for_each    = toset(data.aws_subnets.private_subnets.ids)
+  resource_id = each.key  
+  key         = "kubernetes.io/role/internal-elb"
+  value       = 1
+}
+
+resource "aws_ec2_tag" "tag_public_subnets_alb" {
+  for_each    = toset(data.aws_subnets.public_subnets.ids)
+  resource_id = each.key  
+  key         = "kubernetes.io/role/elb"
+  value       = 1
+}
+
 resource "aws_security_group" "cluster" {
   name_prefix            = "${var.cluster_name}-cluster-"
   description            = "EKS cluster security group"
@@ -184,7 +205,7 @@ resource "aws_eks_cluster" "main" {
     endpoint_private_access = true
     public_access_cidrs     = ["0.0.0.0/0"]
 
-    subnet_ids         = data.aws_subnets.public_subnets.ids # => data.aws_subnets.private_subnets.ids
+    subnet_ids         =  data.aws_subnets.private_subnets.ids
     security_group_ids = [aws_security_group.cluster.id]
   }
 
@@ -548,7 +569,7 @@ resource "aws_eks_node_group" "karpenter" {
   cluster_name           = aws_eks_cluster.main.name
   node_group_name_prefix = "karpenter-"
   node_role_arn          = aws_iam_role.node_group.arn
-  subnet_ids             = data.aws_subnets.public_subnets.ids
+  subnet_ids             = data.aws_subnets.private_subnets.ids
 
   scaling_config {
     desired_size = 2
