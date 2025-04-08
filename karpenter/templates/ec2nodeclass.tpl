@@ -3,7 +3,7 @@ kind: EC2NodeClass
 metadata:
   name: default
 spec:
-  amiFamily: Custom  # Capitalized as per Karpenter spec
+  amiFamily:  Bottlerocket
   amiSelectorTerms:
     - id: "${custom_ami_id}"
   role: "${role}"
@@ -14,11 +14,9 @@ spec:
     - tags:
         karpenter.sh/discovery: "${cluster_name}"
   userData: |
-    #!/bin/bash
-    set -o xtrace
-    /etc/eks/bootstrap.sh ${cluster_name} \
-      --apiserver-endpoint '${cluster_endpoint}' \
-      --b64-cluster-ca '${cluster_ca_data}' \
-      --kubelet-extra-args '--node-labels=karpenter.sh/discovery=${cluster_name},node.kubernetes.io/lifecycle=spot,karpenter.sh/controller=true,karpenter.sh/provisioned=true --register-with-taints=karpenter.sh/unregistered:NoExecute'
+    [settings.kubernetes]
+      api-server = "${api_server}"
+      cluster-certificate = "${cluster_ca}"
+      cluster-name = "${cluster_name}"
   tags:
     karpenter.sh/discovery: "${cluster_name}"

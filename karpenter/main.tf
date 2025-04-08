@@ -5,11 +5,11 @@
 data "template_file" "ec2nodeclass" {
   template = file("${path.module}/templates/ec2nodeclass.tpl")
   vars = {
-    cluster_name     = var.cluster_name
-    role             = var.cluster_name
-    custom_ami_id    = var.custom_ami_id
-    cluster_endpoint = var.cluster_endpoint
-    cluster_ca_data  = var.cluster_ca_data
+    cluster_name  = var.cluster_name
+    role          = var.cluster_name
+    custom_ami_id = var.custom_ami_id
+    api_server    = var.cluster_endpoint
+    cluster_ca    = var.cluster_ca_data
   }
 }
 

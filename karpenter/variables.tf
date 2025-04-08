@@ -29,11 +29,6 @@ variable "runner_set_parameters" {
   }))
 }
 
-# variable "region" {
-#   type = string
-# }
-
-
 # Define a variable for namespaces and IAM group
 variable "app_teams" {
   description = "List of application teams and their namespaces"

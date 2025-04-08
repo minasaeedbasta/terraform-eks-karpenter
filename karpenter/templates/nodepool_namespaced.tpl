@@ -20,9 +20,6 @@ spec:
         - key: namespace
           value: "${namespace}"
           effect: NoSchedule
-      startupTaints:
-        - key: "karpenter.sh/unregistered"
-          effect: NoSchedule
   limits:
     cpu: 1000
   disruption:
