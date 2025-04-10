@@ -618,7 +618,7 @@ resource "aws_eks_node_group" "karpenter" {
 
   launch_template {
     id      = aws_launch_template.karpenter.id
-    version = "$Latest"
+    version = aws_launch_template.karpenter.latest_version
   }
 
   update_config {

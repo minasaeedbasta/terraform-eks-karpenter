@@ -1,5 +1,5 @@
 module "eks" {
-  source             = "./eks"
+  source             = "./modules/eks"
   region             = var.region
   vpc_id             = var.vpc_id
   cluster_name       = var.cluster_name
@@ -11,7 +11,7 @@ module "eks" {
 }
 
 module "karpenter" {
-  source           = "./karpenter"
+  source           = "./modules/karpenter"
   cluster_name     = module.eks.cluster_name
   cluster_endpoint = module.eks.cluster_endpoint
   cluster_ca_data  = module.eks.cluster_ca_certificate
