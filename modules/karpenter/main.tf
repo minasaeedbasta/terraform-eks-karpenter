@@ -32,7 +32,8 @@ resource "kubernetes_manifest" "nodepool_default" {
 data "template_file" "nodepool_runners" {
   template = file("${path.module}/templates/nodepool_runners.tpl")
   vars = {
-    max_runners = 1000
+    node_pool_name = var.runner_parameters.node_pool_name
+    max_runners    = var.runner_parameters.max_runners
   }
 }
 

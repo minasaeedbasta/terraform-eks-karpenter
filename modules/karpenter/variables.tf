@@ -22,11 +22,11 @@ variable "custom_ami_id" {
   type = string
 }
 
-variable "runner_set_parameters" {
-  type = map(object({
-    node-pool-name = string
-    maxRunners     = number
-  }))
+variable "runner_parameters" {
+  type = object({
+    node_pool_name = string
+    max_runners    = number
+  })
 }
 
 # Define a variable for namespaces and IAM group

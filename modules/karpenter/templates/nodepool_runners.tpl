@@ -1,7 +1,7 @@
 apiVersion: karpenter.sh/v1
 kind: NodePool
 metadata:
-  name: runners
+  name: ${node_pool_name}
 spec:
   template:
     spec:
@@ -21,7 +21,7 @@ spec:
           value: runners
           effect: NoSchedule
   limits:
-    cpu: ${max_runners * 2} # Adjust based on runner CPU needs
+    cpu: ${max_runners * 2}
   disruption:
     consolidationPolicy: WhenEmpty
     consolidateAfter: 30s

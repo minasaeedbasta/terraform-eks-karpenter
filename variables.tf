@@ -51,12 +51,12 @@ variable "tags" {
   description = "A set of key-value tags to be associated with all resources in the cluster."
 }
 
-variable "runner_set_parameters" {
-  type = map(object({
-    node-pool-name = string
-    maxRunners     = number
-  }))
-  description = "Configuration for the runner sets, including node pool names and the maximum number of runners"
+variable "runner_parameters" {
+  type = object({
+    node_pool_name = string
+    max_runners    = number
+  })
+  description = "Configuration for the runner pool, including node pool name and max number of runners"
 }
 
 variable "app_teams" {

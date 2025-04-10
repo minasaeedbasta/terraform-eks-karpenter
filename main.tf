@@ -17,7 +17,7 @@ module "karpenter" {
   cluster_ca_data  = module.eks.cluster_ca_certificate
   tags             = var.tags
   # karpenter_spot_policy_arn = ""
-  runner_set_parameters = var.runner_set_parameters
-  custom_ami_id         = module.eks.custom_ami_id
-  app_teams             = var.app_teams
+  runner_parameters = var.runner_parameters
+  custom_ami_id     = module.eks.custom_ami_id
+  app_teams         = var.app_teams
 }
