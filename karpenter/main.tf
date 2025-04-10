@@ -17,23 +17,29 @@ resource "kubernetes_manifest" "ec2nodeclass" {
   manifest = yamldecode(data.template_file.ec2nodeclass.rendered)
 }
 
-data "template_file" "nodepool_namespaced" {
-  for_each = { for app in var.app_teams : app.app_name => app }
-
-  template = file("${path.module}/templates/nodepool_namespaced.tpl")
+data "template_file" "nodepool_default" {
+  template = file("${path.module}/templates/nodepool_default.tpl")
   vars = {
     cluster_name = var.cluster_name
-    namespace    = each.value.namespace
   }
 }
 
-resource "kubernetes_manifest" "nodepool_namespaced" {
-  for_each = { for app in var.app_teams : app.app_name => app }
-
-  manifest   = yamldecode(data.template_file.nodepool_namespaced[each.key].rendered)
+resource "kubernetes_manifest" "nodepool_default" {
+  manifest   = yamldecode(data.template_file.nodepool_default.rendered)
   depends_on = [kubernetes_manifest.ec2nodeclass]
 }
 
+data "template_file" "nodepool_runners" {
+  template = file("${path.module}/templates/nodepool_runners.tpl")
+  vars = {
+    max_runners = 1000
+  }
+}
+
+resource "kubernetes_manifest" "nodepool_runners" {
+  manifest   = yamldecode(data.template_file.nodepool_runners.rendered)
+  depends_on = [kubernetes_manifest.ec2nodeclass]
+}
 
 #######################
 # Namespaces for Apps #
@@ -118,30 +124,3 @@ resource "aws_eks_access_policy_association" "user_access_policy_association" {
 
   depends_on = [aws_eks_access_entry.user_access_entry]
 }
-
-######################################
-# Kubernetes Role for Admin Access #
-######################################
-
-resource "kubernetes_manifest" "role_admin" {
-  for_each = { for app in var.app_teams : app.app_name => app }
-
-  manifest = yamldecode(templatefile("${path.module}/templates/role_admin.tpl", {
-    namespace = each.value.namespace
-  }))
-}
-
-######################################
-# Kubernetes RoleBinding for Admin Access #
-######################################
-
-resource "kubernetes_manifest" "rolebinding_admin" {
-  for_each = { for app in var.app_teams : app.app_name => app }
-
-  manifest = yamldecode(templatefile("${path.module}/templates/rolebinding_admin.tpl", {
-    namespace  = each.value.namespace
-    group_name = each.value.app_name
-    role_name  = "admin"
-  }))
-}
-

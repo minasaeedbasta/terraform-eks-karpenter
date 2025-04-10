@@ -1,7 +1,7 @@
 apiVersion: karpenter.sh/v1
 kind: NodePool
 metadata:
-  name: namespaced-nodepool-${namespace}
+  name: runners
 spec:
   template:
     spec:
@@ -17,11 +17,11 @@ spec:
           operator: In
           values: ["t3.medium"]
       taints:
-        - key: namespace
-          value: "${namespace}"
+        - key: node-pool
+          value: runners
           effect: NoSchedule
   limits:
-    cpu: 1000
+    cpu: ${max_runners * 2} # Adjust based on runner CPU needs
   disruption:
-    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidationPolicy: WhenEmpty
     consolidateAfter: 30s
