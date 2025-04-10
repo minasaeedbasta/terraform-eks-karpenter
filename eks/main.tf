@@ -4,27 +4,27 @@
 
 resource "aws_ec2_tag" "tag_private_subnets_discovery" {
   for_each    = toset(data.aws_subnets.private_subnets.ids)
-  resource_id = each.key  
+  resource_id = each.key
   key         = "karpenter.sh/discovery"
-  value       = var.cluster_name
+  value       = local.cluster_name
 }
 
 resource "aws_ec2_tag" "tag_private_subnets_alb" {
   for_each    = toset(data.aws_subnets.private_subnets.ids)
-  resource_id = each.key  
+  resource_id = each.key
   key         = "kubernetes.io/role/internal-elb"
   value       = 1
 }
 
 resource "aws_ec2_tag" "tag_public_subnets_alb" {
   for_each    = toset(data.aws_subnets.public_subnets.ids)
-  resource_id = each.key  
+  resource_id = each.key
   key         = "kubernetes.io/role/elb"
   value       = 1
 }
 
 resource "aws_security_group" "cluster" {
-  name_prefix            = "${var.cluster_name}-cluster-"
+  name_prefix            = "${local.cluster_name}-cluster-"
   description            = "EKS cluster security group"
   vpc_id                 = data.aws_vpc.selected.id
   revoke_rules_on_delete = false
@@ -33,18 +33,18 @@ resource "aws_security_group" "cluster" {
 }
 
 resource "aws_security_group" "node" {
-  name_prefix            = "${var.cluster_name}-node-"
+  name_prefix            = "${local.cluster_name}-node-"
   description            = "EKS node shared security group"
   vpc_id                 = data.aws_vpc.selected.id
   revoke_rules_on_delete = false
 
   tags = {
-    Name                                        = "${var.cluster_name}-node"
-    Example                                     = "${var.cluster_name}"
-    GithubOrg                                   = "terraform-aws-modules"
-    GithubRepo                                  = "terraform-aws-eks"
-    "karpenter.sh/discovery"                    = "${var.cluster_name}"
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    Name                                          = "${local.cluster_name}-node"
+    Example                                       = "${local.cluster_name}"
+    GithubOrg                                     = "terraform-aws-modules"
+    GithubRepo                                    = "terraform-aws-eks"
+    "karpenter.sh/discovery"                      = "${local.cluster_name}"
+    "kubernetes.io/cluster/${local.cluster_name}" = "owned"
   }
 }
 
@@ -178,15 +178,20 @@ resource "tls_private_key" "eks_key" {
 }
 
 resource "aws_key_pair" "eks_key" {
-  key_name   = "${var.cluster_name}-key"
+  key_name   = "${local.cluster_name}-key"
   public_key = tls_private_key.eks_key.public_key_openssh
 }
 
 # ##################################################
 # EKS CLUSTER CORE
 # ##################################################
+
+resource "random_id" "suffix" {
+  byte_length = 2 # Generates an 4-character hexadecimal string
+}
+
 resource "aws_eks_cluster" "main" {
-  name                      = var.cluster_name
+  name                      = local.cluster_name
   role_arn                  = aws_iam_role.this.arn
   version                   = var.cluster_version
   enabled_cluster_log_types = ["api", "audit", "authenticator"]
@@ -205,7 +210,7 @@ resource "aws_eks_cluster" "main" {
     endpoint_private_access = true
     public_access_cidrs     = ["0.0.0.0/0"]
 
-    subnet_ids         =  data.aws_subnets.private_subnets.ids
+    subnet_ids         = data.aws_subnets.private_subnets.ids
     security_group_ids = [aws_security_group.cluster.id]
   }
 
@@ -237,9 +242,30 @@ resource "aws_eks_addon" "coredns" {
     aws_iam_role_policy_attachment.vpc_controller
   ]
 }
+resource "aws_eks_addon" "eks-pod-identity-agent" {
+  cluster_name                = aws_eks_cluster.main.name
+  addon_name                  = "eks-pod-identity-agent"
+  preserve                    = true
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+  configuration_values = jsonencode({
+    agent = {
+      additionalArgs = {
+        "-b" = "169.254.170.23"
+      }
+    }
+  })
+
+  depends_on = [
+    aws_eks_node_group.karpenter,
+    aws_iam_role_policy_attachment.custom,
+    aws_iam_role_policy_attachment.eks_cluster,
+    aws_iam_role_policy_attachment.vpc_controller
+  ]
+}
 
 resource "aws_eks_addon" "this" {
-  for_each                    = toset(["eks-pod-identity-agent", "vpc-cni", "kube-proxy"])
+  for_each                    = toset(["vpc-cni", "kube-proxy"])
   cluster_name                = aws_eks_cluster.main.name
   addon_name                  = each.value
   preserve                    = true
@@ -292,7 +318,7 @@ resource "time_sleep" "this" {
 # ##################################################
 
 resource "aws_iam_policy" "custom" {
-  name_prefix = "${var.cluster_name}-cluster-"
+  name_prefix = "${local.cluster_name}-cluster-"
   path        = "/"
 
   policy = jsonencode({
@@ -392,7 +418,7 @@ resource "aws_iam_policy" "custom" {
 }
 
 resource "aws_iam_role" "this" {
-  name_prefix = "${var.cluster_name}-cluster-role-"
+  name_prefix = "cluster-role-"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -505,7 +531,11 @@ resource "helm_release" "karpenter" {
     ]
   }
 
-  depends_on = [aws_eks_node_group.karpenter]
+  depends_on = [
+    aws_eks_node_group.karpenter,
+    aws_eks_access_entry.cluster_creator_admin,
+    aws_eks_access_policy_association.cluster_creator_admin
+  ]
 }
 
 
@@ -513,7 +543,7 @@ data "template_file" "karpenter_userdata" {
   template = file("${path.module}/userdata.tpl")
 
   vars = {
-    cluster_name = var.cluster_name
+    cluster_name = local.cluster_name
     api_server   = aws_eks_cluster.main.endpoint
     cluster_ca   = aws_eks_cluster.main.certificate_authority[0].data
   }
@@ -531,8 +561,8 @@ resource "aws_launch_template" "karpenter" {
   user_data = base64encode(data.template_file.karpenter_userdata.rendered)
 
   network_interfaces {
-    security_groups             = [aws_security_group.node.id]
-    delete_on_termination       = true
+    security_groups       = [aws_security_group.node.id]
+    delete_on_termination = true
   }
 
   block_device_mappings {
@@ -651,7 +681,7 @@ resource "aws_iam_role_policy_attachment" "controller" {
 }
 
 resource "aws_eks_pod_identity_association" "karpenter" {
-  cluster_name    = var.cluster_name
+  cluster_name    = local.cluster_name
   namespace       = "karpenter"
   service_account = "karpenter"
   role_arn        = aws_iam_role.controller.arn
@@ -718,7 +748,7 @@ resource "aws_eks_access_entry" "node_group" {
 #----------------------------------------------------------#
 
 resource "aws_iam_role" "karpenter_nodes" {
-  name = var.cluster_name
+  name = local.cluster_name
   path = "/"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -758,7 +788,7 @@ resource "aws_eks_access_entry" "karpenter_nodes" {
 }
 
 resource "aws_iam_instance_profile" "karpenter_nodes" {
-  name_prefix = "${var.cluster_name}-"
+  name_prefix = "${local.cluster_name}-"
   path        = "/"
   role        = aws_iam_role.karpenter_nodes.name
 
@@ -771,7 +801,7 @@ resource "aws_iam_instance_profile" "karpenter_nodes" {
 # ##################################################
 
 resource "aws_sqs_queue" "this" {
-  name = "${var.cluster_name}-karpenter-queue"
+  name = "${local.cluster_name}-karpenter-queue"
 }
 
 resource "aws_cloudwatch_event_rule" "this" {

@@ -29,7 +29,7 @@ data "aws_iam_policy_document" "v1" {
 
     condition {
       test     = "StringEquals"
-      variable = "aws:ResourceTag/kubernetes.io/cluster/${var.cluster_name}"
+      variable = "aws:ResourceTag/kubernetes.io/cluster/${local.cluster_name}"
       values   = ["owned"]
     }
 
@@ -58,14 +58,14 @@ data "aws_iam_policy_document" "v1" {
 
     condition {
       test     = "StringEquals"
-      variable = "aws:RequestTag/kubernetes.io/cluster/${var.cluster_name}"
+      variable = "aws:RequestTag/kubernetes.io/cluster/${local.cluster_name}"
       values   = ["owned"]
     }
 
     condition {
       test     = "StringEquals"
       variable = "aws:RequestTag/eks:eks-cluster-name"
-      values   = [var.cluster_name]
+      values   = [local.cluster_name]
     }
 
     condition {
@@ -89,14 +89,14 @@ data "aws_iam_policy_document" "v1" {
 
     condition {
       test     = "StringEquals"
-      variable = "aws:RequestTag/kubernetes.io/cluster/${var.cluster_name}"
+      variable = "aws:RequestTag/kubernetes.io/cluster/${local.cluster_name}"
       values   = ["owned"]
     }
 
     condition {
       test     = "StringEquals"
       variable = "aws:RequestTag/eks:eks-cluster-name"
-      values   = [var.cluster_name]
+      values   = [local.cluster_name]
     }
 
     condition {
@@ -123,7 +123,7 @@ data "aws_iam_policy_document" "v1" {
 
     condition {
       test     = "StringEquals"
-      variable = "aws:ResourceTag/kubernetes.io/cluster/${var.cluster_name}"
+      variable = "aws:ResourceTag/kubernetes.io/cluster/${local.cluster_name}"
       values   = ["owned"]
     }
 
@@ -136,7 +136,7 @@ data "aws_iam_policy_document" "v1" {
     condition {
       test     = "StringEqualsIfExists"
       variable = "aws:RequestTag/eks:eks-cluster-name"
-      values   = [var.cluster_name]
+      values   = [local.cluster_name]
     }
 
     condition {
@@ -164,7 +164,7 @@ data "aws_iam_policy_document" "v1" {
 
     condition {
       test     = "StringEquals"
-      variable = "aws:ResourceTag/kubernetes.io/cluster/${var.cluster_name}"
+      variable = "aws:ResourceTag/kubernetes.io/cluster/${local.cluster_name}"
       values   = ["owned"]
     }
 
@@ -242,14 +242,14 @@ data "aws_iam_policy_document" "v1" {
 
     condition {
       test     = "StringEquals"
-      variable = "aws:RequestTag/kubernetes.io/cluster/${var.cluster_name}"
+      variable = "aws:RequestTag/kubernetes.io/cluster/${local.cluster_name}"
       values   = ["owned"]
     }
 
     condition {
       test     = "StringEquals"
       variable = "aws:RequestTag/eks:eks-cluster-name"
-      values   = [var.cluster_name]
+      values   = [local.cluster_name]
     }
 
     condition {
@@ -272,7 +272,7 @@ data "aws_iam_policy_document" "v1" {
 
     condition {
       test     = "StringEquals"
-      variable = "aws:ResourceTag/kubernetes.io/cluster/${var.cluster_name}"
+      variable = "aws:ResourceTag/kubernetes.io/cluster/${local.cluster_name}"
       values   = ["owned"]
     }
 
@@ -284,14 +284,14 @@ data "aws_iam_policy_document" "v1" {
 
     condition {
       test     = "StringEquals"
-      variable = "aws:RequestTag/kubernetes.io/cluster/${var.cluster_name}"
+      variable = "aws:RequestTag/kubernetes.io/cluster/${local.cluster_name}"
       values   = ["owned"]
     }
 
     condition {
       test     = "StringEquals"
       variable = "aws:RequestTag/eks:eks-cluster-name"
-      values   = [var.cluster_name]
+      values   = [local.cluster_name]
     }
 
     condition {
@@ -324,7 +324,7 @@ data "aws_iam_policy_document" "v1" {
 
     condition {
       test     = "StringEquals"
-      variable = "aws:ResourceTag/kubernetes.io/cluster/${var.cluster_name}"
+      variable = "aws:ResourceTag/kubernetes.io/cluster/${local.cluster_name}"
       values   = ["owned"]
     }
 
@@ -349,7 +349,7 @@ data "aws_iam_policy_document" "v1" {
 
   statement {
     sid       = "AllowAPIServerEndpointDiscovery"
-    resources = ["arn:${local.partition}:eks:${local.region}:${local.account_id}:cluster/${var.cluster_name}"]
+    resources = ["arn:${local.partition}:eks:${local.region}:${local.account_id}:cluster/${local.cluster_name}"]
     actions   = ["eks:DescribeCluster"]
   }
 }

@@ -10,9 +10,13 @@ locals {
 
 locals {
   partition               = "aws"
-  region                  = "us-east-1"
+  region                  = var.region
   dns_suffix              = "amazonaws.com"
   enable_spot_termination = true
+}
+
+locals {
+  cluster_name = "${var.prefix}-${var.environment}-${var.cluster_name}-${random_id.suffix.hex}"
 }
 
 locals {

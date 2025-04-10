@@ -1,6 +1,6 @@
-
 module "eks" {
   source             = "./eks"
+  region             = var.region
   vpc_id             = var.vpc_id
   cluster_name       = var.cluster_name
   cluster_version    = var.cluster_version
@@ -12,7 +12,7 @@ module "eks" {
 
 module "karpenter" {
   source           = "./karpenter"
-  cluster_name     = var.cluster_name
+  cluster_name     = module.eks.cluster_name
   cluster_endpoint = module.eks.cluster_endpoint
   cluster_ca_data  = module.eks.cluster_ca_certificate
   tags             = var.tags

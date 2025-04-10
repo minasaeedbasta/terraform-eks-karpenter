@@ -68,3 +68,13 @@ variable "app_teams" {
   }))
   description = "List of application teams, their namespaces, IAM groups, and associated roles"
 }
+
+variable "prefix" {
+  type    = string
+  default = "CIS"
+}
+
+variable "environment" {
+  type    = string
+  default = "Dev"
+}

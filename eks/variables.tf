@@ -2,6 +2,10 @@ variable "cluster_name" {
   type = string
 }
 
+variable "region" {
+  type = string
+}
+
 variable "vpc_id" {
   type = string
 }
@@ -24,4 +28,14 @@ variable "karpenter_version" {
 
 variable "tags" {
   type = map(string)
+}
+
+variable "prefix" {
+  type    = string
+  default = "CIS"
+}
+
+variable "environment" {
+  type    = string
+  default = "Dev"
 }

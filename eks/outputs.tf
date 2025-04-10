@@ -19,3 +19,7 @@ output "private_key_pem" {
 output "custom_ami_id" {
   value = data.aws_ami.bottlerocket_eks.image_id
 }
+
+output "cluster_name" {
+  value = local.cluster_name
+}
