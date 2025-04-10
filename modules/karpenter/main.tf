@@ -47,81 +47,37 @@ resource "kubernetes_manifest" "nodepool_runners" {
 #######################
 
 resource "kubernetes_namespace" "app_namespace" {
-  for_each = { for app in var.app_teams : app.app_name => app }
+  for_each = { for app in var.apps : app.name => app }
 
   metadata {
     name = each.value.namespace
   }
 }
 
-######################################
-# Fetch IAM Users from Existing Group #
-######################################
+#####################################
+# EKS Access Entry for App IAM Role #
+#####################################
+resource "aws_eks_access_entry" "role_access_entry" {
+  for_each = { for app in var.apps : app.name => app }
 
-resource "aws_iam_policy" "eks_access_policy" {
-  for_each = { for app in var.app_teams : app.app_name => app }
-
-  name        = "eks-${each.value.app_name}-access-policy"
-  description = "Access to Kubernetes API for namespace management"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "eks:DescribeCluster",
-          "eks:ListClusters",
-          "eks:DescribeNodegroup",
-          "eks:ListNodegroups"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = "eks:AccessKubernetesApi"
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_group_policy_attachment" "eks_group_policy_attachment" {
-  for_each = { for app in var.app_teams : app.app_name => app }
-
-  group      = each.value.iam_group
-  policy_arn = aws_iam_policy.eks_access_policy[each.key].arn
-}
-
-######################################
-# EKS Access Entry for Users #
-######################################
-resource "aws_eks_access_entry" "user_access_entry" {
-  for_each = {
-    for entry in local.app_users : "${entry.app_name}-${basename(entry.user_arn)}" => entry
-  }
-
-  principal_arn     = each.value.user_arn
-  kubernetes_groups = [each.value.app_name]
+  principal_arn     = each.value.role_arn
   cluster_name      = var.cluster_name
 }
 
-######################################
-# EKS Access Policy Association for Users #
-######################################
-resource "aws_eks_access_policy_association" "user_access_policy_association" {
-  for_each = {
-    for entry in local.app_users : "${entry.app_name}-${basename(entry.user_arn)}" => entry
-  }
+##################################################
+# EKS Access Policy Association for App IAM Role #
+##################################################
+resource "aws_eks_access_policy_association" "role_access_policy_association" {
+  for_each = { for app in var.apps : app.name => app }
 
   cluster_name  = var.cluster_name
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-  principal_arn = each.value.user_arn
+  principal_arn = each.value.role_arn
 
   access_scope {
     type       = "namespace"
     namespaces = [each.value.namespace]
   }
 
-  depends_on = [aws_eks_access_entry.user_access_entry]
+  depends_on = [aws_eks_access_entry.role_access_entry]
 }

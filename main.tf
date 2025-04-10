@@ -11,13 +11,12 @@ module "eks" {
 }
 
 module "karpenter" {
-  source           = "./modules/karpenter"
-  cluster_name     = module.eks.cluster_name
-  cluster_endpoint = module.eks.cluster_endpoint
-  cluster_ca_data  = module.eks.cluster_ca_certificate
-  tags             = var.tags
-  # karpenter_spot_policy_arn = ""
-  runner_parameters = var.runner_parameters
+  source            = "./modules/karpenter"
+  cluster_name      = module.eks.cluster_name
+  cluster_endpoint  = module.eks.cluster_endpoint
+  cluster_ca_data   = module.eks.cluster_ca_certificate
   custom_ami_id     = module.eks.custom_ami_id
-  app_teams         = var.app_teams
+  runner_parameters = var.runner_parameters
+  apps              = var.apps
+  tags              = var.tags
 }

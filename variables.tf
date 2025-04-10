@@ -59,14 +59,13 @@ variable "runner_parameters" {
   description = "Configuration for the runner pool, including node pool name and max number of runners"
 }
 
-variable "app_teams" {
+variable "apps" {
   type = list(object({
-    app_name  = string
-    iam_group = string
+    name      = string
     namespace = string
-    role_name = string
+    role_arn  = string
   }))
-  description = "List of application teams, their namespaces, IAM groups, and associated roles"
+  description = "List of application and their associated roles"
 }
 
 variable "prefix" {
