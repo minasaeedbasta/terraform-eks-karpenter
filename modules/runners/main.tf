@@ -33,13 +33,36 @@ resource "helm_release" "runners" {
       memory          = var.runner_parameters.memory
     })
   ]
+
   set {
-    name  = "githubConfigSecret.github_token"
-    value = data.aws_ssm_parameter.github_runners_pat.value
+    name  = "githubConfigSecret.github_app_id"
+    value = data.aws_ssm_parameter.github_app_id.value
   }
-  depends_on = [helm_release.actions_runner_controller, time_sleep.delay_before_runner_sets_destroy]
+
+  set {
+    name  = "githubConfigSecret.github_app_installation_id"
+    value = data.aws_ssm_parameter.github_app_installation_id.value
+  }
+
+  set {
+    name  = "githubConfigSecret.github_app_private_key"
+    value = data.aws_ssm_parameter.github_app_private_key.value
+  }
+
+  depends_on = [
+    helm_release.actions_runner_controller,
+    time_sleep.delay_before_runner_sets_destroy
+  ]
 }
 
-data "aws_ssm_parameter" "github_runners_pat" {
-  name = var.pat_ssm_parameter_path
+data "aws_ssm_parameter" "github_app_id" {
+  name = var.ssm_parameter_github_app_id
+}
+
+data "aws_ssm_parameter" "github_app_installation_id" {
+  name = var.ssm_parameter_github_app_installation_id
+}
+
+data "aws_ssm_parameter" "github_app_private_key" {
+  name = var.ssm_parameter_github_app_private_key
 }

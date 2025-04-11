@@ -7,6 +7,8 @@ module "eks" {
   karpenter_version  = var.karpenter_version
   node_group_scaling = var.node_group_scaling
   instance_type      = var.instance_type
+  apps               = var.apps
+  cluster_admins     = var.cluster_admins
   tags               = var.tags
 }
 
@@ -19,12 +21,13 @@ module "karpenter" {
   runner_parameters              = var.runner_parameters
   runner_nodepool_instance_type  = var.runner_nodepool_instance_type
   default_nodepool_instance_type = var.default_nodepool_instance_type
-  apps                           = var.apps
   tags                           = var.tags
 }
 
 module "runners" {
-  source                 = "./modules/runners"
-  runner_parameters      = var.runner_parameters
-  pat_ssm_parameter_path = var.pat_ssm_parameter_path
+  source                                   = "./modules/runners"
+  runner_parameters                        = var.runner_parameters
+  ssm_parameter_github_app_id              = var.ssm_parameter_github_app_id
+  ssm_parameter_github_app_installation_id = var.ssm_parameter_github_app_installation_id
+  ssm_parameter_github_app_private_key     = var.ssm_parameter_github_app_private_key
 }

@@ -9,7 +9,17 @@ variable "runner_parameters" {
   })
 }
 
-variable "pat_ssm_parameter_path" {
+variable "ssm_parameter_github_app_id" {
+  type = string
+  sensitive = true
+}
+
+variable "ssm_parameter_github_app_installation_id" {
+  type = string
+  sensitive = true
+}
+
+variable "ssm_parameter_github_app_private_key" {
   type = string
   sensitive = true
 }
