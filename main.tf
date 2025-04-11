@@ -11,12 +11,20 @@ module "eks" {
 }
 
 module "karpenter" {
-  source            = "./modules/karpenter"
-  cluster_name      = module.eks.cluster_name
-  cluster_endpoint  = module.eks.cluster_endpoint
-  cluster_ca_data   = module.eks.cluster_ca_certificate
-  custom_ami_id     = module.eks.custom_ami_id
-  runner_parameters = var.runner_parameters
-  apps              = var.apps
-  tags              = var.tags
+  source                         = "./modules/karpenter"
+  cluster_name                   = module.eks.cluster_name
+  cluster_endpoint               = module.eks.cluster_endpoint
+  cluster_ca_data                = module.eks.cluster_ca_certificate
+  custom_ami_id                  = module.eks.custom_ami_id
+  runner_parameters              = var.runner_parameters
+  runner_nodepool_instance_type  = var.runner_nodepool_instance_type
+  default_nodepool_instance_type = var.default_nodepool_instance_type
+  apps                           = var.apps
+  tags                           = var.tags
+}
+
+module "runners" {
+  source                 = "./modules/runners"
+  runner_parameters      = var.runner_parameters
+  pat_ssm_parameter_path = var.pat_ssm_parameter_path
 }

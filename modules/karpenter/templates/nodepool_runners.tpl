@@ -1,9 +1,12 @@
 apiVersion: karpenter.sh/v1
 kind: NodePool
 metadata:
-  name: ${node_pool_name}
+  name: ${node-pool-name}
 spec:
   template:
+    metadata:
+      labels:
+        node-pool: "${node-pool-name}"
     spec:
       nodeClassRef:
         group: karpenter.k8s.aws
@@ -15,13 +18,13 @@ spec:
           values: ["on-demand"]
         - key: "node.kubernetes.io/instance-type"
           operator: In
-          values: ["t3.medium"]
+          values: [${instance_type}]
       taints:
         - key: node-pool
-          value: runners
+          value: ${node-pool-name}
           effect: NoSchedule
   limits:
-    cpu: ${max_runners * 2}
+    cpu: ${maxRunners * 2}
   disruption:
     consolidationPolicy: WhenEmpty
-    consolidateAfter: 30s
+    consolidateAfter: 60s

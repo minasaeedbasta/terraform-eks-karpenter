@@ -15,7 +15,7 @@ spec:
           values: ["on-demand"]
         - key: "node.kubernetes.io/instance-type"
           operator: In
-          values: ["t3.medium"]
+          values: [${instance_type}]
   limits:
     cpu: 1000
   disruption:

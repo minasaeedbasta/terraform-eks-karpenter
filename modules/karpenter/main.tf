@@ -20,7 +20,8 @@ resource "kubernetes_manifest" "ec2nodeclass" {
 data "template_file" "nodepool_default" {
   template = file("${path.module}/templates/nodepool_default.tpl")
   vars = {
-    cluster_name = var.cluster_name
+    cluster_name  = var.cluster_name
+    instance_type = var.default_nodepool_instance_type
   }
 }
 
@@ -31,9 +32,14 @@ resource "kubernetes_manifest" "nodepool_default" {
 
 data "template_file" "nodepool_runners" {
   template = file("${path.module}/templates/nodepool_runners.tpl")
+
   vars = {
-    node_pool_name = var.runner_parameters.node_pool_name
-    max_runners    = var.runner_parameters.max_runners
+    instance_type  = var.runner_nodepool_instance_type
+    minRunners     = var.runner_parameters.maxRunners
+    maxRunners     = var.runner_parameters.maxRunners
+    node-pool-name = var.runner_parameters.node-pool-name
+    cpu            = var.runner_parameters.cpu
+    memory         = var.runner_parameters.memory
   }
 }
 
@@ -60,8 +66,8 @@ resource "kubernetes_namespace" "app_namespace" {
 resource "aws_eks_access_entry" "role_access_entry" {
   for_each = { for app in var.apps : app.name => app }
 
-  principal_arn     = each.value.role_arn
-  cluster_name      = var.cluster_name
+  principal_arn = each.value.role_arn
+  cluster_name  = var.cluster_name
 }
 
 ##################################################

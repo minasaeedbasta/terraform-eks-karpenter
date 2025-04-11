@@ -4,15 +4,15 @@ variable "region" {
   default     = "us-east-1"
 }
 
+variable "vpc_id" {
+  type        = string
+  description = "The ID of the VPC where the EKS cluster will be deployed"
+}
+
 variable "cluster_name" {
   type        = string
   default     = "main"
   description = "The name of the EKS cluster"
-}
-
-variable "vpc_id" {
-  type        = string
-  description = "The ID of the VPC where the EKS cluster will be deployed"
 }
 
 variable "cluster_version" {
@@ -53,10 +53,31 @@ variable "tags" {
 
 variable "runner_parameters" {
   type = object({
-    node_pool_name = string
-    max_runners    = number
+    githubConfigUrl = string
+    minRunners      = number
+    maxRunners      = number
+    node-pool-name  = string
+    cpu             = string
+    memory          = string
   })
-  description = "Configuration for the runner pool, including node pool name and max number of runners"
+  description = "Configuration for each runner set"
+}
+
+variable "default_nodepool_instance_type" {
+  type        = string
+  default     = "t3.medium"
+  description = "The EC2 instance type to be used for the default karpenter nodepool"
+}
+
+variable "runner_nodepool_instance_type" {
+  type        = string
+  default     = "t3.medium"
+  description = "The EC2 instance type to be used for the runners nodepool"
+}
+
+variable "pat_ssm_parameter_path" {
+  type = string
+  sensitive = true
 }
 
 variable "apps" {

@@ -20,9 +20,21 @@ variable "custom_ami_id" {
 
 variable "runner_parameters" {
   type = object({
-    node_pool_name = string
-    max_runners    = number
+    githubConfigUrl = string
+    minRunners      = number
+    maxRunners      = number
+    node-pool-name  = string
+    cpu             = string
+    memory          = string
   })
+}
+
+variable "default_nodepool_instance_type" {
+  type = string
+}
+
+variable "runner_nodepool_instance_type" {
+  type = string
 }
 
 variable "apps" {
