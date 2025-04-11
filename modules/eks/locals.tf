@@ -16,6 +16,23 @@ locals {
 }
 
 locals {
+  all_roles = concat(
+    [for app in var.apps : {
+      name       = app.name
+      role_arn   = app.role_arn
+      namespace  = app.namespace
+      scope_type = "namespace"
+    }],
+    [for admin in var.cluster_admins : {
+      name       = admin.name
+      role_arn   = admin.role_arn
+      namespace  = null
+      scope_type = "cluster"
+    }]
+  )
+}
+
+locals {
   cluster_name = "${var.prefix}-${var.environment}-${var.cluster_name}-${random_id.suffix.hex}"
 }
 

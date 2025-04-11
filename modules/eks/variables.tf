@@ -39,3 +39,19 @@ variable "environment" {
   type    = string
   default = "Dev"
 }
+
+
+variable "apps" {
+  type = list(object({
+    name      = string
+    namespace = string
+    role_arn  = string
+  }))
+}
+
+variable "cluster_admins" {
+  type = list(object({
+    name     = string
+    role_arn = string
+  }))
+}

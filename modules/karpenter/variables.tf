@@ -10,10 +10,6 @@ variable "cluster_ca_data" {
   type = string
 }
 
-variable "tags" {
-  type = map(string)
-}
-
 variable "custom_ami_id" {
   type = string
 }
@@ -37,10 +33,6 @@ variable "runner_nodepool_instance_type" {
   type = string
 }
 
-variable "apps" {
-  type = list(object({
-    name      = string
-    namespace = string
-    role_arn  = string
-  }))
+variable "tags" {
+  type = map(string)
 }

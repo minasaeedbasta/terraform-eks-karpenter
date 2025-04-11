@@ -75,10 +75,10 @@ variable "runner_nodepool_instance_type" {
   description = "The EC2 instance type to be used for the runners nodepool"
 }
 
-variable "pat_ssm_parameter_path" {
-  type = string
-  sensitive = true
-}
+# variable "pat_ssm_parameter_path" {
+#   type      = string
+#   sensitive = true
+# }
 
 variable "apps" {
   type = list(object({
@@ -87,6 +87,30 @@ variable "apps" {
     role_arn  = string
   }))
   description = "List of application and their associated roles"
+}
+
+variable "cluster_admins" {
+  type = list(object({
+    name     = string
+    role_arn = string
+  }))
+  default     = []
+  description = "Cluster-wide access IAM roles for DevOps team and other admins"
+}
+
+variable "ssm_parameter_github_app_id" {
+  type      = string
+  sensitive = true
+}
+
+variable "ssm_parameter_github_app_installation_id" {
+  type      = string
+  sensitive = true
+}
+
+variable "ssm_parameter_github_app_private_key" {
+  type      = string
+  sensitive = true
 }
 
 variable "prefix" {

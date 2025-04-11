@@ -841,3 +841,47 @@ resource "aws_sqs_queue_policy" "this_policy" {
     ]
   })
 }
+
+
+#######################
+# Namespaces for Apps #
+#######################
+
+resource "kubernetes_namespace" "app_namespace" {
+  for_each = { for app in var.apps : app.name => app }
+
+  metadata {
+    name = each.value.namespace
+  }
+
+  depends_on = [time_sleep.this]
+}
+
+########################################################
+# EKS Access Entry for App IAM Role and Cluster Admins #
+########################################################
+resource "aws_eks_access_entry" "role_access_entry" {
+  for_each = { for role in local.all_roles : role.name => role }
+
+  principal_arn = each.value.role_arn
+  cluster_name  = local.cluster_name
+  depends_on    = [aws_sqs_queue.this]
+}
+
+#####################################################################
+# EKS Access Policy Association for App IAM Role and Cluster Admins #
+#####################################################################
+resource "aws_eks_access_policy_association" "role_access_policy_association" {
+  for_each = { for role in local.all_roles : role.name => role }
+
+  cluster_name  = local.cluster_name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = each.value.role_arn
+
+  access_scope {
+    type       = each.value.scope_type
+    namespaces = each.value.scope_type == "namespace" ? [each.value.namespace] : null
+  }
+
+  depends_on = [aws_eks_access_entry.role_access_entry]
+}
