@@ -5,7 +5,7 @@
 resource "aws_ec2_tag" "tag_private_subnets_discovery" {
   for_each    = toset(data.aws_subnets.private_subnets.ids)
   resource_id = each.key
-  key         = "karpenter.sh/discovery"
+  key         = "karpenter.sh/discovery/${local.cluster_name}"
   value       = local.cluster_name
 }
 
@@ -14,6 +14,9 @@ resource "aws_ec2_tag" "tag_private_subnets_alb" {
   resource_id = each.key
   key         = "kubernetes.io/role/internal-elb"
   value       = 1
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_ec2_tag" "tag_public_subnets_alb" {
@@ -21,6 +24,9 @@ resource "aws_ec2_tag" "tag_public_subnets_alb" {
   resource_id = each.key
   key         = "kubernetes.io/role/elb"
   value       = 1
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_security_group" "cluster" {
@@ -39,12 +45,12 @@ resource "aws_security_group" "node" {
   revoke_rules_on_delete = false
 
   tags = {
-    Name                                          = "${local.cluster_name}-node"
-    Example                                       = "${local.cluster_name}"
-    GithubOrg                                     = "terraform-aws-modules"
-    GithubRepo                                    = "terraform-aws-eks"
-    "karpenter.sh/discovery"                      = "${local.cluster_name}"
-    "kubernetes.io/cluster/${local.cluster_name}" = "owned"
+    Name                                           = "${local.cluster_name}-node"
+    Example                                        = "${local.cluster_name}"
+    GithubOrg                                      = "terraform-aws-modules"
+    GithubRepo                                     = "terraform-aws-eks"
+    "karpenter.sh/discovery/${local.cluster_name}" = "${local.cluster_name}"
+    "kubernetes.io/cluster/${local.cluster_name}"  = "owned"
   }
 }
 
@@ -513,7 +519,8 @@ resource "helm_release" "karpenter" {
     settings:
       clusterName: ${aws_eks_cluster.main.name}
       clusterEndpoint: ${aws_eks_cluster.main.endpoint}
-      # interruptionQueue: ${aws_sqs_queue.this.name}
+      subnetSelector:
+        karpenter.sh/discovery/${local.cluster_name}: ${local.cluster_name}
     tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
