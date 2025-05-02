@@ -9,25 +9,25 @@ resource "aws_ec2_tag" "tag_private_subnets_discovery" {
   value       = local.cluster_name
 }
 
-resource "aws_ec2_tag" "tag_private_subnets_alb" {
-  for_each    = toset(data.aws_subnets.private_subnets.ids)
-  resource_id = each.key
-  key         = "kubernetes.io/role/internal-elb"
-  value       = 1
-  lifecycle {
-    prevent_destroy = true
-  }
-}
+# resource "aws_ec2_tag" "tag_private_subnets_alb" {
+#   for_each    = toset(data.aws_subnets.private_subnets.ids)
+#   resource_id = each.key
+#   key         = "kubernetes.io/role/internal-elb"
+#   value       = 1
+#   lifecycle {
+#     prevent_destroy = true
+#   }
+# }
 
-resource "aws_ec2_tag" "tag_public_subnets_alb" {
-  for_each    = toset(data.aws_subnets.public_subnets.ids)
-  resource_id = each.key
-  key         = "kubernetes.io/role/elb"
-  value       = 1
-  lifecycle {
-    prevent_destroy = true
-  }
-}
+# resource "aws_ec2_tag" "tag_public_subnets_alb" {
+#   for_each    = toset(data.aws_subnets.public_subnets.ids)
+#   resource_id = each.key
+#   key         = "kubernetes.io/role/elb"
+#   value       = 1
+#   lifecycle {
+#     prevent_destroy = true
+#   }
+# }
 
 resource "aws_security_group" "cluster" {
   name_prefix            = "${local.cluster_name}-cluster-"

@@ -5,7 +5,7 @@ metadata:
 spec:
   amiFamily: Bottlerocket
   amiSelectorTerms:
-    - alias: bottlerocket@latest
+    - id: "${custom_ami_id}"
   role: "${role}"
   subnetSelectorTerms:
     - tags:
@@ -13,5 +13,10 @@ spec:
   securityGroupSelectorTerms:
     - tags:
         "karpenter.sh/discovery/${cluster_name}": "${cluster_name}"
+  userData: |
+    [settings.kubernetes]
+      api-server = "${api_server}"
+      cluster-certificate = "${cluster_ca}"
+      cluster-name = "${cluster_name}"
   tags:
     "karpenter.sh/discovery/${cluster_name}": "${cluster_name}"

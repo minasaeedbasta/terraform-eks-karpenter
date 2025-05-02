@@ -3,7 +3,7 @@
 #############################################
 
 data "template_file" "ec2nodeclass" {
-  template = file("${path.module}/templates/ec2nodeclass.tpl")
+  template = file("${path.module}/templates/ec2nodeclass.tpl")  # change to the ec2nc file
   vars = {
     cluster_name  = var.cluster_name
     role          = var.cluster_name
